@@ -1,0 +1,23 @@
+{
+    "smtp_settings": {
+        "smtp": "",
+        "smtp_port": "",
+        "sender_email": ""
+    },
+    "file_settings": {
+        "file_name": [],
+        "file_path": [],
+        "file_numbers": 0,
+        "csv_path": ""
+    },
+    "message_settings": {
+        "subject": "",
+        "from": "",
+        "html": "html.txt"
+    },
+    "img_settings": {
+        "img_file_path": "",
+        "img_file_name": "",
+        "img_cid": ""
+    }
+}
