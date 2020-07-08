@@ -16,26 +16,30 @@ from email.mime.image import MIMEImage
 from msvcrt import getch
 import sys
 
+
 path_of_a = []
 open_p_o_a = []
 header = []
+
 
 def add_path_csv(event):
     filepath = filedialog.askopenfilename(initialdir="/", title="Select File", filetypes=(("csv", "*.csv"), ("all files", "*.*")))
     event.delete(0, END)
     event.insert(END, filepath)
 
+
 def add_path_pdf(event):
     filepath = filedialog.askopenfilename(initialdir="/", title="Select File", filetypes=(("pdf", "*.pdf"), ("all files", "*.*")))
     event.insert(END, filepath)
-    
+
+
 def add_path_logo(event):
     filepath = filedialog.askopenfilename(initialdir="/", title="Select File", filetypes=(("png", "*.png"),("jpg", "*.jpg"), ("all files", "*.*")))
     event.delete(0, END)
     event.insert(END, filepath)
 
-def save_to_file(_smtp, _smtp_port, _email_entry, _no_of_a, _csv_file):
 
+def save_to_file(_smtp, _smtp_port, _email_entry, _no_of_a, _csv_file):
     settings_dict = {}
     settings_dict['smtp_settings'] = {}
     settings_dict['file_settings'] = {}
@@ -66,8 +70,6 @@ def save_to_file(_smtp, _smtp_port, _email_entry, _no_of_a, _csv_file):
         for a in path_of_a:
             settings_dict['file_settings']['file_name'].append(os.path.basename(a.get()))
             settings_dict['file_settings']['file_path'].append(a.get())
-
-    
 
     if _no_of_a is not None:
         if int(_no_of_a) > 0:
@@ -110,13 +112,15 @@ def save_to_file(_smtp, _smtp_port, _email_entry, _no_of_a, _csv_file):
     cid.insert(END, settings_dict['img_settings']['img_cid'])
 
     root.update()
-    
+
+
 def create_str(s, row):      #replace $monat$ $tag$ $jahr$ $name$ $surname$ in strings
     t = s.replace("$year$", year.get()).replace("$month$", month.get())
 
     for count, head in enumerate(header):
         t = t.replace(f"${head}$", row[count]) #TO DO
     return t
+
 
 def send_mail():
     _smtp = x['smtp_settings']['smtp']
@@ -194,6 +198,7 @@ def send_mail():
         log.insert(END, f"\n{e}\n")
         root.update()
 
+
 def create_file_path(n):
     if len(path_of_a) > 0:
         for a in path_of_a:
@@ -222,6 +227,7 @@ def create_file_path(n):
             open_p_o_a[i] = Button(root, text="open", command=lambda i=i: add_path_pdf(path_of_a[i]))
             open_p_o_a[i].grid(row=0+l, column=4+k, padx=(165, 0))
 
+
 def attach_file(i, _message, row):     #attach file function
     
     file_name_ = create_str(os.path.basename(path_of_a[i].get()), row)
@@ -239,6 +245,7 @@ def attach_file(i, _message, row):     #attach file function
     _message.attach(file)
     return _message
 
+
 def attach_img(_message):      #attach image function
     with open(email_logo.get(), "rb") as fp:
         msgImage = MIMEImage(fp.read())
@@ -247,6 +254,7 @@ def attach_img(_message):      #attach image function
     msgImage.add_header("Content-Disposition", "inline", filename=os.path.basename(email_logo.get()))
     _message.attach(msgImage)
     return _message
+
 
 def settings_window(_file_loaded):
     settings = tk.Toplevel(root)
@@ -291,6 +299,7 @@ def settings_window(_file_loaded):
         smtp_port.insert(END, x['smtp_settings']['smtp_port'])      # settings
         no_of_a.insert(END, x['file_settings']['file_numbers'])     # settings
         csv_file.insert(END, x['file_settings']['csv_path'])        # settings
+
 
 def load_settings(loaded):
     if loaded:
@@ -348,6 +357,7 @@ def load_settings(loaded):
 
         return _x, _html, settings_dict['file_settings']['file_numbers'], _file_loaded
 
+
 def create_header(_x):
     del header[:]
 
@@ -367,12 +377,9 @@ def create_header(_x):
     for i in range(len(header)):
         Label(root, text=f"replaces ${header[i]}$ with {header[i]}").grid(row=8+i, column=4, sticky=E)
 
-    
 
-    
 root = tk.Tk()
 root.title("Email script")
-
 
 # year
 Label(root, text="year").grid(row=0, column=0, sticky=E)
@@ -439,7 +446,6 @@ if os.path.isfile("settings.txt"):
     x, html, file_numbers, file_loaded = load_settings(True)
 else:
     x, html, file_numbers, file_loaded = load_settings(False)
-
 
 #load setings
 if file_loaded:
