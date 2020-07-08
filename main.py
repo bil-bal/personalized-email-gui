@@ -17,28 +17,28 @@ from msvcrt import getch
 import sys
 
 
-path_of_a = []
-open_p_o_a = []
-header = []
+path_of_a = []      # list for input box
+open_p_o_a = []     # list for open button
+header = []         # list for header from .csv file
 
-
+# filepath to .csv file
 def add_path_csv(event):
     filepath = filedialog.askopenfilename(initialdir="/", title="Select File", filetypes=(("csv", "*.csv"), ("all files", "*.*")))
     event.delete(0, END)
     event.insert(END, filepath)
 
-
+# filepath to pdf
 def add_path_pdf(event):
     filepath = filedialog.askopenfilename(initialdir="/", title="Select File", filetypes=(("pdf", "*.pdf"), ("all files", "*.*")))
     event.insert(END, filepath)
 
-
+# filepath to company logo
 def add_path_logo(event):
     filepath = filedialog.askopenfilename(initialdir="/", title="Select File", filetypes=(("png", "*.png"),("jpg", "*.jpg"), ("all files", "*.*")))
     event.delete(0, END)
     event.insert(END, filepath)
 
-
+# save to settings.txt file, for both email settings and settings window
 def save_to_file(_smtp, _smtp_port, _email_entry, _no_of_a, _csv_file):
     settings_dict = {}
     settings_dict['smtp_settings'] = {}
@@ -113,15 +113,15 @@ def save_to_file(_smtp, _smtp_port, _email_entry, _no_of_a, _csv_file):
 
     root.update()
 
-
-def create_str(s, row):      #replace $monat$ $tag$ $jahr$ $name$ $surname$ in strings
+# replace $monat$ $tag$ $jahr$ $name$ $surname$ in path strings and html text
+def create_str(s, row):      
     t = s.replace("$year$", year.get()).replace("$month$", month.get())
 
     for count, head in enumerate(header):
-        t = t.replace(f"${head}$", row[count]) #TO DO
+        t = t.replace(f"${head}$", row[count])
     return t
 
-
+# send email function
 def send_mail():
     _smtp = x['smtp_settings']['smtp']
     _smtp_port = x['smtp_settings']['smtp_port']
@@ -131,15 +131,13 @@ def send_mail():
         context = ssl.create_default_context()
         _password = password.get()
         server = smtplib.SMTP(_smtp, _smtp_port)
-        server.starttls(context=context)                                            # secure tls connection
+        server.starttls(context=context)                            # secure tls connection
         server.login(_email, _password)
         log.insert(END, "\nlogin successful\n\n")
         root.update()
-        print("\nlogin successful\n\n")
     except Exception as e:
         log.insert(END, f"\n{e}\n")
         root.update()
-        print(e)        # print error code
 
     row_count = sum(1 for row in csv.reader(open(x['file_settings']['csv_path']))) - 1
     mail_count = 0 
@@ -149,7 +147,7 @@ def send_mail():
             reader = csv.reader(csvfile)
             while True:
                 next(reader)
-                #for name, surname, number, email in reader:         # iterate through rows
+
                 for row in reader:
                     mail_count += 1
                     try:
@@ -174,31 +172,30 @@ def send_mail():
                         #print(f"Sende Email {mail_count}/{row_count} an {name} {surname}")
                         log.insert(END, f"Sending email {mail_count}/{row_count} to {row[len(row) - 1]}\n")
                         root.update()
-                        print(f"Sending email {mail_count}/{row_count} to {row[len(row) - 1]}\n")
                         
-                        server.sendmail(_email, row[len(row) - 1], message.as_string())   # send composed emails
+                        server.sendmail(_email, row[len(row) - 1], message.as_string())   # send composed email
 
                     except Exception as e:
                         log.insert(END, f"Error in mail to {row[len(row) - 1]} with: {e}\n")
                         root.update()
-                        print(f"Error in mail to {row[len(row) - 1]} with: {e}\n") # print out errors and continue with next row in .csv
                         error_count += 1
                         continue
                 break
+
         if mail_count == row_count:
             log.insert(END, f"\nSending emails finished with {error_count} errors.")
             root.update()
-            print(f"\nSending emails finished with {error_count} errors.") # confirm sending of all emails with number of errors.
         else: 
             log.insert(END, "\n\nUNEXPECTED ERROR")
             root.update()
-            print("\n\nUNEXPECTED ERROR")
+
         server.quit()
+
     except Exception as e:
         log.insert(END, f"\n{e}\n")
         root.update()
 
-
+# update window with file path boxes and buttons
 def create_file_path(n):
     if len(path_of_a) > 0:
         for a in path_of_a:
@@ -227,7 +224,7 @@ def create_file_path(n):
             open_p_o_a[i] = Button(root, text="open", command=lambda i=i: add_path_pdf(path_of_a[i]))
             open_p_o_a[i].grid(row=0+l, column=4+k, padx=(165, 0))
 
-
+# attach files to MIME message
 def attach_file(i, _message, row):     #attach file function
     
     file_name_ = create_str(os.path.basename(path_of_a[i].get()), row)
@@ -245,7 +242,7 @@ def attach_file(i, _message, row):     #attach file function
     _message.attach(file)
     return _message
 
-
+# attach company image to MIME message
 def attach_img(_message):      #attach image function
     with open(email_logo.get(), "rb") as fp:
         msgImage = MIMEImage(fp.read())
@@ -255,7 +252,7 @@ def attach_img(_message):      #attach image function
     _message.attach(msgImage)
     return _message
 
-
+# settings window
 def settings_window(_file_loaded):
     settings = tk.Toplevel(root)
     settings.lift()
@@ -300,9 +297,9 @@ def settings_window(_file_loaded):
         no_of_a.insert(END, x['file_settings']['file_numbers'])     # settings
         csv_file.insert(END, x['file_settings']['csv_path'])        # settings
 
-
+# load settings on start
 def load_settings(loaded):
-    if loaded:
+    if loaded:              # if settings file exist
         f = open("settings.txt", "r")     #open and load settings in json format
         _x = json.loads(f.read())
         _html = open(_x["message_settings"]["html"], "r").read()
@@ -310,10 +307,9 @@ def load_settings(loaded):
         _file_loaded = True
         if _x['file_settings']['csv_path'] != "":
             create_header(_x)
-        print("file loaded")
         f.close()
         return _x, _html, _file_numbers, _file_loaded
-    else:
+    else:                   # else create file
         _file_loaded = True
 
         settings_dict = {}
@@ -357,7 +353,7 @@ def load_settings(loaded):
 
         return _x, _html, settings_dict['file_settings']['file_numbers'], _file_loaded
 
-
+# create replacement labels and add .csv header to list
 def create_header(_x):
     del header[:]
 
@@ -379,7 +375,7 @@ def create_header(_x):
 
 
 root = tk.Tk()
-root.title("Email script")
+root.title("Personalized Email")
 
 # year
 Label(root, text="year").grid(row=0, column=0, sticky=E)
